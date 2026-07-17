@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     PORTFOLIO SITE V3
+     All portfolio content now lives in data.csv (same folder).
+     Edit the CSV, push with GitHub Desktop, site updates itself.
+
+     CSV columns:
+     TEMPLATE, IMAGE, POST TITLE, URL, REACTIONS, COMMENTS, SHARES
+
+     - One row per example post.
+     - Rows with the same TEMPLATE name are grouped into one card.
+     - IMAGE only needs filling on the first row of each template
+       (repeats are ignored).
+     - Poster images go in an /images folder next to this file.
+============================================================= -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcus Banks Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0F0E;
+  --panel:#141917;
+  --panel-2:#101413;
+  --line:#242C29;
+  --chalk:#F2F4F0;
+  --muted:#8A948F;
+  --amber:#FFB02E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--chalk);
+  font-family:'Inter',sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ---------- HERO ---------- */
+header{
+  border-bottom:1px solid var(--line);
+  padding:64px 0 44px;
+  background:
+    radial-gradient(900px 340px at 50% -120px, rgba(255,176,46,.07), transparent 70%),
+    var(--bg);
+}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--amber);
+  display:flex;align-items:center;gap:12px;
+}
+.eyebrow::after{content:"";height:1px;width:64px;background:var(--amber);opacity:.5}
+h1{
+  font-family:'Anton',sans-serif;
+  font-size:clamp(44px,7vw,84px);
+  line-height:.98;
+  text-transform:uppercase;
+  letter-spacing:.01em;
+  margin-top:18px;
+}
+h1 .accent{color:var(--amber)}
+
+/* ---------- TEMPLATE GRID ---------- */
+main{padding:52px 0 80px}
+.section-head{margin-bottom:28px}
+.section-head h2{
+  font-family:'Anton',sans-serif;
+  font-size:clamp(24px,3vw,34px);
+  text-transform:uppercase;letter-spacing:.02em;font-weight:400;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+  gap:22px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform .25s ease, border-color .25s ease;
+  opacity:0;transform:translateY(14px);
+}
+.card.in{opacity:1;transform:translateY(0);transition:opacity .5s ease, transform .5s ease, border-color .25s ease}
+.card:hover{border-color:rgba(255,176,46,.45);transform:translateY(-3px)}
+.poster{
+  aspect-ratio:4/5;
+  background:var(--panel-2);
+  position:relative;overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.card:hover .poster img{transform:scale(1.03)}
+.poster .fallback{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Anton',sans-serif;font-size:56px;color:var(--line);
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.card-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.tname{
+  font-family:'Anton',sans-serif;
+  font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:400;
+  display:flex;align-items:center;gap:10px;
+}
+.tname::before{content:"";width:8px;height:8px;background:var(--amber);border-radius:2px;flex:none}
+.posts{display:flex;flex-direction:column;margin-top:2px}
+.post{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:11px 0;
+  border-top:1px solid var(--line);
+}
+.post:first-child{border-top:none}
+.post a{
+  font-size:14px;font-weight:500;text-decoration:none;
+  color:var(--chalk);
+  border-bottom:1px solid transparent;
+  transition:color .15s, border-color .15s;
+  line-height:1.35;
+}
+.post a:hover{color:var(--amber);border-color:var(--amber)}
+.post a::after{content:" ↗";font-size:11px;color:var(--muted)}
+.stats{display:flex;gap:12px;flex:none}
+.stat{
+  display:flex;align-items:center;gap:5px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;font-weight:500;color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.stat svg{width:13px;height:13px;fill:var(--amber);opacity:.85}
+
+/* data load error */
+.load-error{
+  grid-column:1/-1;
+  background:var(--panel);
+  border:1px dashed var(--line);
+  border-radius:12px;
+  padding:28px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.7;
+}
+.load-error strong{color:var(--chalk)}
+.load-error code{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--amber);
+  font-size:13px;
+}
+
+/* ---------- FOOTER ---------- */
+footer{
+  border-top:1px solid var(--line);
+  padding:32px 0 44px;
+  color:var(--muted);font-size:13.5px;
+}
+footer a{color:var(--amber);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media (prefers-reduced-motion:reduce){
+  .card,.card.in{opacity:1;transform:none;transition:none}
+  .poster img{transition:none}
+  html{scroll-behavior:auto}
+}
+@media (max-width:520px){
+  .post{flex-direction:column;align-items:flex-start;gap:8px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Social Media Portfolio</div>
+    <h1>Marcus Banks <span class="accent">Portfolio</span></h1>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Templates &amp; Results</h2>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Get in touch: <a href="mailto:you@email.com">you@email.com</a>
+  </div>
+</footer>
+
+<script>
+/* ---------- icons ---------- */
+const ICONS = {
+  heart: '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.2C.3 8.9 1.6 5 5.2 4.2c2.1-.5 4.2.4 5.4 2.1h2.8c1.2-1.7 3.3-2.6 5.4-2.1 3.6.8 4.9 4.7 3.2 7.6C19.5 16.1 12 21 12 21z" transform="scale(.92) translate(1,1)"/></svg>',
+  comment: '<svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 1-2z"/></svg>',
+  share: '<svg viewBox="0 0 24 24"><path d="M13 5v4C6 10 3 15 2 19c2.5-3 5.5-4.5 11-4.5V19l9-7-9-7z"/></svg>',
+};
+
+/* ---------- helpers ---------- */
+const fmt = n => {
+  if (n >= 1e6) return (n/1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/,'') + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/,'') + 'K';
+  return String(n);
+};
+const num = v => parseInt(String(v).replace(/[^0-9]/g,''),10) || 0;
+
+/* CSV parser — handles quoted fields, commas inside quotes, CR LF */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (inQuotes){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ','){ row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r'){
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(field); field = '';
+        if (row.some(f => f.trim() !== '')) rows.push(row);
+        row = [];
+      } else field += c;
+    }
+  }
+  row.push(field);
+  if (row.some(f => f.trim() !== '')) rows.push(row);
+  return rows;
+}
+
+/* group CSV rows into templates */
+function buildData(rows){
+  const header = rows[0].map(h => h.trim().toUpperCase());
+  const col = name => header.indexOf(name);
+  const iT = col('TEMPLATE'), iI = col('IMAGE'),
+        iP = col('POST TITLE'), iU = col('URL'),
+        iR = col('REACTIONS'), iC = col('COMMENTS'), iS = col('SHARES');
+
+  const templates = new Map();
+  rows.slice(1).forEach(r => {
+    const name = (r[iT] || '').trim();
+    if (!name) return;
+    if (!templates.has(name)){
+      templates.set(name, {
+        template: name,
+        image: (r[iI] || '').trim(),
+        posts: [],
+      });
+    }
+    const t = templates.get(name);
+    if (!t.image && r[iI]) t.image = r[iI].trim();
+    if ((r[iP] || '').trim()){
+      t.posts.push({
+        title: r[iP].trim(),
+        url: (r[iU] || '#').trim(),
+        reactions: num(r[iR]),
+        comments: num(r[iC]),
+        shares: num(r[iS]),
+      });
+    }
+  });
+  return [...templates.values()];
+}
+
+/* ---------- render ---------- */
+const grid = document.getElementById('grid');
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function render(data){
+  data.forEach(t => {
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const initials = t.template.split(' ').map(w=>w[0]).join('').slice(0,3);
+    const postsHtml = t.posts.map(p =>
+      "<div class='post'>" +
+        "<a href='" + p.url + "' target='_blank' rel='noopener'>" + p.title + "</a>" +
+        "<div class='stats'>" +
+          "<span class='stat'>" + ICONS.heart + fmt(p.reactions) + "</span>" +
+          "<span class='stat'>" + ICONS.comment + fmt(p.comments) + "</span>" +
+          "<span class='stat'>" + ICONS.share + fmt(p.shares) + "</span>" +
+        "</div>" +
+      "</div>"
+    ).join('');
+
+    card.innerHTML =
+      "<div class='poster'>" +
+        "<div class='fallback'>" + initials + "</div>" +
+        (t.image ? "<img src='" + t.image + "' alt='" + t.template + " template example' onerror=\"this.remove()\" loading='lazy'>" : "") +
+      "</div>" +
+      "<div class='card-body'>" +
+        "<div class='tname'>" + t.template + "</div>" +
+        "<div class='posts'>" + postsHtml + "</div>" +
+      "</div>";
+
+    grid.appendChild(card);
+  });
+
+  if (reduced){
+    document.querySelectorAll('.card').forEach(c => c.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach((e,i) => {
+        if (e.isIntersecting){
+          setTimeout(()=>e.target.classList.add('in'), (i%3)*80);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.card').forEach(c => io.observe(c));
+  }
+}
+
+/* ---------- load the CSV ---------- */
+fetch('data.csv', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(text => {
+    const data = buildData(parseCSV(text));
+    if (!data.length) throw new Error('empty');
+    render(data);
+  })
+  .catch(() => {
+    grid.innerHTML =
+      "<div class='load-error'>" +
+      "<strong>Couldn't load data.csv.</strong><br>" +
+      "Make sure <code>data.csv</code> sits in the same folder as this file. " +
+      "Note: browsers block CSV loading when opening the file directly from disk — " +
+      "it works on the live GitHub Pages site, or preview locally with " +
+      "<code>python -m http.server</code> in this folder, then open " +
+      "<code>http://localhost:8000</code>." +
+      "</div>";
+  });
+</script>
+</body>
+</html>
