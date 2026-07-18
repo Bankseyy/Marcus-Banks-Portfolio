@@ -1,17 +1,27 @@
 <!DOCTYPE html>
 <!-- ============================================================
-     PORTFOLIO SITE V4
-     All portfolio content now lives in data.csv (same folder).
-     Edit the CSV, push with GitHub Desktop, site updates itself.
+     PORTFOLIO SITE V6
+     Tabbed pages: Templates (default) / Plugin Showcase / Editorial Edits.
+     All content lives in CSV files next to this file.
+     Edit a CSV, push with GitHub Desktop, site updates itself.
 
-     CSV columns:
-     TEMPLATE, IMAGE, POST TITLE, URL, REACTIONS, COMMENTS, SHARES
-
+     data.csv       -> Templates tab
+     editorial.csv  -> Editorial Edits tab (same columns as data.csv)
+     Columns: TEMPLATE, IMAGE, POST TITLE, URL, REACTIONS, COMMENTS, SHARES
      - One row per example post.
      - Rows with the same TEMPLATE name are grouped into one card.
-     - IMAGE only needs filling on the first row of each template
-       (repeats are ignored).
+     - IMAGE only needs filling on the first row of each group.
      - Poster images go in an /images folder next to this file.
+     - No editorial.csv yet = that tab shows a "coming soon" note.
+
+     tools.csv      -> Plugin Showcase tab
+     Columns: TOOL, VIDEO, NOTES
+     - VIDEO is either a YouTube link (watch?v=... or youtu.be/...)
+       or a path to an MP4 in the repo (e.g. videos/dropper.mp4).
+     - MP4s autoplay muted on loop; YouTube links embed the player.
+
+     Direct links: add #templates, #plugins or #editorial to the URL
+     to open the site on a specific tab.
 ============================================================= -->
 <html lang="en">
 <head>
@@ -31,7 +41,6 @@
   --amber:#FFB02E;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
 body{
   background:var(--bg);
   color:var(--chalk);
@@ -45,8 +54,7 @@ a{color:inherit}
 
 /* ---------- HERO ---------- */
 header{
-  border-bottom:1px solid var(--line);
-  padding:64px 0 44px;
+  padding:64px 0 0;
   background:
     radial-gradient(900px 340px at 50% -120px, rgba(255,176,46,.07), transparent 70%),
     var(--bg);
@@ -68,14 +76,37 @@ h1{
 }
 h1 .accent{color:var(--amber)}
 
-/* ---------- TEMPLATE GRID ---------- */
-main{padding:52px 0 80px}
-.section-head{margin-bottom:28px}
-.section-head h2{
-  font-family:'Anton',sans-serif;
-  font-size:clamp(24px,3vw,34px);
-  text-transform:uppercase;letter-spacing:.02em;font-weight:400;
+/* ---------- TABS ---------- */
+nav.tabs{
+  display:flex;gap:4px;
+  margin-top:36px;
+  border-bottom:1px solid var(--line);
+  overflow-x:auto;
+  scrollbar-width:none;
 }
+nav.tabs::-webkit-scrollbar{display:none}
+.tab-btn{
+  appearance:none;background:none;border:0;cursor:pointer;
+  font-family:'Anton',sans-serif;
+  font-size:16px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);
+  padding:12px 18px 14px;
+  position:relative;
+  white-space:nowrap;
+  transition:color .15s;
+}
+.tab-btn:hover{color:var(--chalk)}
+.tab-btn.active{color:var(--amber)}
+.tab-btn.active::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:-1px;
+  height:3px;background:var(--amber);border-radius:2px 2px 0 0;
+}
+
+/* ---------- PAGES ---------- */
+main{padding:44px 0 80px}
+.page{display:none}
+.page.active{display:block}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
@@ -137,8 +168,38 @@ main{padding:52px 0 80px}
 }
 .stat svg{width:13px;height:13px;fill:var(--amber);opacity:.85}
 
-/* data load error */
-.load-error{
+/* ---------- PLUGIN SHOWCASE ---------- */
+.tool-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(420px,1fr));
+  gap:22px;
+}
+@media (max-width:480px){.tool-grid{grid-template-columns:1fr}}
+.tool-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:border-color .25s ease;
+}
+.tool-card:hover{border-color:rgba(255,176,46,.45)}
+.tool-media{
+  aspect-ratio:16/9;
+  background:var(--panel-2);
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.tool-media video,.tool-media iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+  object-fit:cover;
+}
+.tool-body{padding:16px 18px 18px}
+.tool-body .tname{font-size:18px}
+.tool-notes{color:var(--muted);font-size:13.5px;margin-top:8px;line-height:1.55}
+
+/* ---------- NOTICES ---------- */
+.notice{
   grid-column:1/-1;
   background:var(--panel);
   border:1px dashed var(--line);
@@ -148,8 +209,8 @@ main{padding:52px 0 80px}
   font-size:14px;
   line-height:1.7;
 }
-.load-error strong{color:var(--chalk)}
-.load-error code{
+.notice strong{color:var(--chalk)}
+.notice code{
   font-family:'IBM Plex Mono',monospace;
   color:var(--amber);
   font-size:13px;
@@ -167,7 +228,6 @@ footer a:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){
   .card,.card.in{opacity:1;transform:none;transition:none}
   .poster img{transition:none}
-  html{scroll-behavior:auto}
 }
 @media (max-width:520px){
   .post{flex-direction:column;align-items:flex-start;gap:8px}
@@ -180,15 +240,29 @@ footer a:hover{text-decoration:underline}
   <div class="wrap">
     <div class="eyebrow">Social Media Portfolio</div>
     <h1>Marcus Banks <span class="accent">Portfolio</span></h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-page="templates" role="tab">Templates</button>
+      <button class="tab-btn" data-page="plugins" role="tab">Plugin Showcase</button>
+      <button class="tab-btn" data-page="editorial" role="tab">Editorial Edits</button>
+    </nav>
   </div>
 </header>
 
 <main>
   <div class="wrap">
-    <div class="section-head">
-      <h2>Templates &amp; Results</h2>
-    </div>
-    <div class="grid" id="grid"></div>
+
+    <section class="page active" id="page-templates">
+      <div class="grid" id="grid-templates"></div>
+    </section>
+
+    <section class="page" id="page-plugins">
+      <div class="tool-grid" id="grid-plugins"></div>
+    </section>
+
+    <section class="page" id="page-editorial">
+      <div class="grid" id="grid-editorial"></div>
+    </section>
+
   </div>
 </main>
 
@@ -241,7 +315,7 @@ function parseCSV(text){
   return rows;
 }
 
-/* group CSV rows into templates */
+/* group CSV rows into template/edit cards */
 function buildData(rows){
   const header = rows[0].map(h => h.trim().toUpperCase());
   const col = name => header.indexOf(name);
@@ -249,18 +323,14 @@ function buildData(rows){
         iP = col('POST TITLE'), iU = col('URL'),
         iR = col('REACTIONS'), iC = col('COMMENTS'), iS = col('SHARES');
 
-  const templates = new Map();
+  const groups = new Map();
   rows.slice(1).forEach(r => {
     const name = (r[iT] || '').trim();
     if (!name) return;
-    if (!templates.has(name)){
-      templates.set(name, {
-        template: name,
-        image: (r[iI] || '').trim(),
-        posts: [],
-      });
+    if (!groups.has(name)){
+      groups.set(name, { template: name, image: (r[iI] || '').trim(), posts: [] });
     }
-    const t = templates.get(name);
+    const t = groups.get(name);
     if (!t.image && r[iI]) t.image = r[iI].trim();
     if ((r[iP] || '').trim()){
       t.posts.push({
@@ -272,14 +342,27 @@ function buildData(rows){
       });
     }
   });
-  return [...templates.values()];
+  return [...groups.values()];
 }
 
-/* ---------- render ---------- */
-const grid = document.getElementById('grid');
+/* ---------- card rendering (shared by Templates + Editorial) ---------- */
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function render(data){
+function revealCards(container){
+  const cards = container.querySelectorAll('.card');
+  if (reduced){ cards.forEach(c => c.classList.add('in')); return; }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e,i) => {
+      if (e.isIntersecting){
+        setTimeout(()=>e.target.classList.add('in'), (i%3)*80);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: .12 });
+  cards.forEach(c => io.observe(c));
+}
+
+function renderCards(data, container){
   data.forEach(t => {
     const card = document.createElement('article');
     card.className = 'card';
@@ -299,50 +382,121 @@ function render(data){
     card.innerHTML =
       "<div class='poster'>" +
         "<div class='fallback'>" + initials + "</div>" +
-        (t.image ? "<img src='" + t.image + "' alt='" + t.template + " template example' onerror=\"this.remove()\" loading='lazy'>" : "") +
+        (t.image ? "<img src='" + t.image + "' alt='" + t.template + " example' onerror=\"this.remove()\" loading='lazy'>" : "") +
       "</div>" +
       "<div class='card-body'>" +
         "<div class='tname'>" + t.template + "</div>" +
         "<div class='posts'>" + postsHtml + "</div>" +
       "</div>";
 
-    grid.appendChild(card);
+    container.appendChild(card);
   });
-
-  if (reduced){
-    document.querySelectorAll('.card').forEach(c => c.classList.add('in'));
-  } else {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach((e,i) => {
-        if (e.isIntersecting){
-          setTimeout(()=>e.target.classList.add('in'), (i%3)*80);
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: .12 });
-    document.querySelectorAll('.card').forEach(c => io.observe(c));
-  }
+  revealCards(container);
 }
 
-/* ---------- load the CSV ---------- */
-fetch('data.csv', { cache: 'no-store' })
+function loadCardCSV(file, containerId, emptyMessage){
+  const container = document.getElementById(containerId);
+  fetch(file, { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(text => {
+      const data = buildData(parseCSV(text));
+      if (!data.length) throw new Error('empty');
+      renderCards(data, container);
+    })
+    .catch(() => { container.innerHTML = "<div class='notice'>" + emptyMessage + "</div>"; });
+}
+
+loadCardCSV('data.csv', 'grid-templates',
+  "<strong>Couldn't load data.csv.</strong><br>" +
+  "Make sure <code>data.csv</code> sits in the same folder as this file. " +
+  "Note: browsers block CSV loading when opening the file directly from disk — " +
+  "it works on the live GitHub Pages site, or preview locally with " +
+  "<code>python -m http.server</code> in this folder, then open " +
+  "<code>http://localhost:8000</code>.");
+
+loadCardCSV('editorial.csv', 'grid-editorial',
+  "<strong>Editorial edits coming soon.</strong><br>" +
+  "To fill this page, add an <code>editorial.csv</code> next to <code>index.html</code> " +
+  "using the same columns as <code>data.csv</code>: " +
+  "<code>TEMPLATE, IMAGE, POST TITLE, URL, REACTIONS, COMMENTS, SHARES</code>.");
+
+/* ---------- plugin showcase (tools.csv) ---------- */
+function youtubeId(url){
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+
+function renderTools(data){
+  const toolGrid = document.getElementById('grid-plugins');
+  data.forEach(t => {
+    const card = document.createElement('article');
+    card.className = 'tool-card';
+
+    const yt = youtubeId(t.video);
+    const media = yt
+      ? "<iframe src='https://www.youtube-nocookie.com/embed/" + yt + "' " +
+        "title='" + t.tool + "' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' " +
+        "allowfullscreen loading='lazy'></iframe>"
+      : "<video src='" + t.video + "' autoplay muted loop playsinline controls preload='metadata'></video>";
+
+    card.innerHTML =
+      "<div class='tool-media'>" + media + "</div>" +
+      "<div class='tool-body'>" +
+        "<div class='tname'>" + t.tool + "</div>" +
+        (t.notes ? "<p class='tool-notes'>" + t.notes + "</p>" : "") +
+      "</div>";
+
+    toolGrid.appendChild(card);
+  });
+}
+
+fetch('tools.csv', { cache: 'no-store' })
   .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
   .then(text => {
-    const data = buildData(parseCSV(text));
-    if (!data.length) throw new Error('empty');
-    render(data);
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('empty');
+    const header = rows[0].map(x => x.trim().toUpperCase());
+    const iT = header.indexOf('TOOL'), iV = header.indexOf('VIDEO'), iN = header.indexOf('NOTES');
+    const tools = rows.slice(1)
+      .map(r => ({
+        tool: (r[iT] || '').trim(),
+        video: (r[iV] || '').trim(),
+        notes: iN > -1 ? (r[iN] || '').trim() : '',
+      }))
+      .filter(t => t.tool && t.video);
+    if (!tools.length) throw new Error('empty');
+    renderTools(tools);
   })
   .catch(() => {
-    grid.innerHTML =
-      "<div class='load-error'>" +
-      "<strong>Couldn't load data.csv.</strong><br>" +
-      "Make sure <code>data.csv</code> sits in the same folder as this file. " +
-      "Note: browsers block CSV loading when opening the file directly from disk — " +
-      "it works on the live GitHub Pages site, or preview locally with " +
-      "<code>python -m http.server</code> in this folder, then open " +
-      "<code>http://localhost:8000</code>." +
-      "</div>";
+    document.getElementById('grid-plugins').innerHTML =
+      "<div class='notice'><strong>Plugin demos coming soon.</strong><br>" +
+      "To fill this page, add a <code>tools.csv</code> next to <code>index.html</code> " +
+      "with columns <code>TOOL, VIDEO, NOTES</code>. VIDEO can be a YouTube link " +
+      "or a path to an MP4 in a <code>videos</code> folder.</div>";
   });
+
+/* ---------- tab switching ---------- */
+const tabs = document.querySelectorAll('.tab-btn');
+const pages = document.querySelectorAll('.page');
+
+function showPage(name, updateHash){
+  tabs.forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+
+  /* pause looping demo videos on hidden pages, resume on the visible one */
+  document.querySelectorAll('.page video').forEach(v => {
+    if (v.closest('.page').classList.contains('active')) { v.play().catch(()=>{}); }
+    else { v.pause(); }
+  });
+
+  if (updateHash) history.replaceState(null, '', '#' + name);
+}
+
+tabs.forEach(b => b.addEventListener('click', () => showPage(b.dataset.page, true)));
+
+/* open on the tab named in the URL hash, e.g. site/#plugins */
+const initial = location.hash.replace('#','');
+if (['templates','plugins','editorial'].includes(initial)) showPage(initial, false);
 </script>
 </body>
 </html>
