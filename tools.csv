@@ -1,10 +1,10 @@
 TOOL,VIDEO,NOTES
-XI Builder,videos/videotest.mp4,Builds out an XI using automatic player selection
-Badge Dropper,videos/videotest.mp4,Automatically drops in club badges
+XI Builder,videos/xibuilder.mp4,Builds out an XI using automatic player selection
+Badge Dropper,videos/badgedropper.mp4,Automatically drops in club badges
 Flag Dropper,videos/flagdropper.mp4,Automatically drops in national team flags
-Tweet Filler,videos/videotest.mp4,Automatically creates tweet graphics
-Font Weighter,videos/videotest.mp4,Automatically changes font weight to custom values
-Auto-Number ,videos/videotest.mp4,Automatically changes text layers to numbers
+Tweet Filler,videos/tweetfiller.mp4,Automatically creates tweet graphics
+Font Weighter,videos/fontweighter.mp4,Automatically changes font weight to custom values
+Auto-Number ,videos/number.mp4,Automatically changes text layers to numbers
 Text Replacer,videos/videotest.mp4,Automatically replaces text layers
 Shape Inserter,videos/videotest.mp4,Automatically inserts distributed shapes
 Image Replacer,videos/videotest.mp4,Automatically replaces images in template
