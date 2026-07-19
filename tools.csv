@@ -5,3 +5,9 @@ Flag Dropper,,Automatically drops in national team flags
 Tweet Filler,,Automatically creates tweet graphics
 Font Weighter,,Automatically changes font weight to custom values
 Auto-Number ,,Automatically changes text layers to numbers
+Text Replacer,,Automatically replaces text layers
+Shape Inserter,,Automatically inserts distributed shapes
+Image Replacer,,Automatically replaces images in template
+Gridlines,,Automatically adds gridlines into canvas
+Layer Distributor,,Automatically distributes selected layers perfectly 
+Layer Duplicator,,Duplicates layer/shape/group making all layers unique for template building
