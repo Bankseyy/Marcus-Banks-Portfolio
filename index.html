@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ============================================================
-     PORTFOLIO SITE V8
+     PORTFOLIO SITE V10
      Tabbed pages: Templates (default) / Plugin Showcase / Editorial Edits.
      All content lives in CSV files next to this file.
      Edit a CSV, push with GitHub Desktop, site updates itself.
@@ -327,6 +327,7 @@ const num = v => parseInt(String(v).replace(/[^0-9]/g,''),10) || 0;
 
 /* CSV parser — handles quoted fields, commas inside quotes, CR LF */
 function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');  /* strip Excel's UTF-8 BOM */
   const rows = [];
   let row = [], field = '', inQuotes = false;
   for (let i = 0; i < text.length; i++){
@@ -533,14 +534,23 @@ function openLightbox(src, title, cardVideo){
   lbVideo = document.createElement('video');
   lbVideo.src = src;
   lbVideo.controls = true;
-  lbVideo.autoplay = true;
   lbVideo.loop = true;
   lbVideo.playsInline = true;
+  lbVideo.muted = true;              /* start muted so playback is never blocked */
   lightbox.insertBefore(lbVideo, lbTitle);
 
   lbTitle.textContent = title;
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  /* explicitly start playback; once it's rolling, unmute so sound (if any) comes through */
+  const p = lbVideo.play();
+  if (p && p.then){
+    p.then(() => { lbVideo.muted = false; })
+     .catch(() => { /* leave muted — user can unmute via controls */ });
+  } else {
+    lbVideo.muted = false;
+  }
 }
 
 function closeLightbox(){
